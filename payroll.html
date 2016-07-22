@@ -14,63 +14,81 @@
 
   <script>
 
-  var request1 = new XMLHttpRequest;
-  request1.open("GET", 'https://docs.google.com/spreadsheets/d/140vtmLBCLqQJlmul1eCwhRD9QNgsfZwCqn9ESzMrcDM/pubhtml', false);
-  request1.send(null);
+  var dates;
+  var times;
 
-  var doc1 = document.implementation.createHTMLDocument("example");
-doc1.documentElement.innerHTML = request1.responseText;
+  function getHours(url) {
+    dates=[];
+    times=[];
+    var request = new XMLHttpRequest;
+    request.open("GET", url, false);
+    request.send(null);
 
-  var values = doc1.getElementsByTagName('td');
-  console.log(values);
-  var dates = []
-  var times = []
+    var doc = document.implementation.createHTMLDocument("example");
+  doc.documentElement.innerHTML = request.responseText;
 
-  for(var value in values){
-      var text = values[value].innerHTML
-      if(typeof text == 'string' && text !=''){
-        var regex = /[\d:]/g;
-        console.log(text,':',typeof text);
-        if(text.match(regex)) {
-          console.log('we got a match: ',text);
-          text=text.split(' ');
-          dates.push(text[0]);
-          times.push(text[1]);
+    var values = doc.getElementsByTagName('td');
+    console.log(values);
+
+
+    for(var value in values){
+        var text = values[value].innerHTML
+        if(typeof text == 'string' && text !=''){
+          var regex = /[\d:]/g;
+          console.log(text,':',typeof text);
+          if(text.match(regex)) {
+            console.log('we got a match: ',text);
+            text=text.split(' ');
+            dates.push(text[0]);
+            times.push(text[1]);
+          }
         }
-      }
-  }
-  console.log('dates',dates);
-  console.log('times',times);
-  var timesInSeconds = times.map(function(x){
-    x = x.split(':');
-    return parseInt(x[0])*3600 + parseInt(x[1])*60 + parseInt(x[2])
-  })
-  console.log(timesInSeconds);
-  var hours = 0
-  for(var y = timesInSeconds.length - 1 ; y > 0 ; y-=2) {
-    var interval = timesInSeconds[y]-timesInSeconds[y-1]
-    if(interval>36000){
-      $('#error').append('shift longer than ten hours!======possibly forgot to clock out');
-      $('#error').append(dates[y],times[y],dates[y-1],times[y-1]);
     }
-    hours += interval;
+    console.log('dates',dates);
+    console.log('times',times);
+    var timesInSeconds = times.map(function(x){
+      x = x.split(':');
+      return parseInt(x[0])*3600 + parseInt(x[1])*60 + parseInt(x[2])
+    })
+    console.log(timesInSeconds);
+    var hours = 0
+    for(var y = timesInSeconds.length - 1 ; y > 0 ; y-=2) {
+      var interval = timesInSeconds[y]-timesInSeconds[y-1]
+      if(interval>36000){
+        $('#error').append('shift longer than ten hours!======possibly forgot to clock out');
+        $('#error').append(dates[y],times[y],dates[y-1],times[y-1]);
+      }
+      hours += interval;
+    }
+
+     hours = hours /3600;
+
+    if(hours - Math.floor(hours) > .5 ){
+      return Math.floor(hours)+.5
+    } else {
+      return Math.floor(hours);
+    }
   }
 
-   hours = hours /3600;
-
-  if(hours - Math.floor(hours) > .5 ){
-    hours = Math.floor(hours)+.5
-  } else {
-    hours = Math.floor(hours);
-  }
+    var dannysHours = getHours('https://docs.google.com/spreadsheets/d/140vtmLBCLqQJlmul1eCwhRD9QNgsfZwCqn9ESzMrcDM/pubhtml');
+    var newKidsHours = getHours('https://docs.google.com/spreadsheets/d/1ZXLZgg5Y-NYr84SOWhSNHYeNUpO3aqjXjAoiDwOA4fo/pubhtml');
 
     $(document).ready(function(){
 
       $('#calcDannyHours').click(function(){
         if(times.length%2==0){
-          $('#dannyHours').append(hours+' hours');
+          $('#dannyHours').append(dannysHours+' hours');
         } else {
           $('#dannyHours').append('there has been a problem, probably forgot to clock out or clock in-------or must wait 5 min or so from clockout for sheet to sync');
+        }
+
+      });
+
+      $('#calcNewKidsHours').click(function(){
+        if(times.length%2==0){
+          $('#newKidsHours').append(newKidsHours+' hours');
+        } else {
+          $('#newKidsHours').append('there has been a problem, probably forgot to clock out or clock in-------or must wait 5 min or so from clockout for sheet to sync');
         }
 
       });
