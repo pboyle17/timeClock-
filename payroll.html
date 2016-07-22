@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>payroll</title>
+  <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+</head>
+<body>
+  <button type='button'id="calcDannyHours">Calculate Danny's Hours</button>
+  <div id="dannyHours"></div>
+  <button id="calcNewKidsHours">Calculate New Kid's Hours</button>
+  <div id="newKidsHours"></div>
+  <div id="error"></div>
+
+  <script>
+
+  var request1 = new XMLHttpRequest;
+  request1.open("GET", 'https://docs.google.com/spreadsheets/d/140vtmLBCLqQJlmul1eCwhRD9QNgsfZwCqn9ESzMrcDM/pubhtml', false);
+  request1.send(null);
+
+  var doc1 = document.implementation.createHTMLDocument("example");
+doc1.documentElement.innerHTML = request1.responseText;
+
+  var values = doc1.getElementsByTagName('td');
+  console.log(values);
+  var dates = []
+  var times = []
+
+  for(var value in values){
+      var text = values[value].innerHTML
+      if(typeof text == 'string' && text !=''){
+        var regex = /[\d:]/g;
+        console.log(text,':',typeof text);
+        if(text.match(regex)) {
+          console.log('we got a match: ',text);
+          text=text.split(' ');
+          dates.push(text[0]);
+          times.push(text[1]);
+        }
+      }
+  }
+  console.log('dates',dates);
+  console.log('times',times);
+  var timesInSeconds = times.map(function(x){
+    x = x.split(':');
+    return parseInt(x[0])*3600 + parseInt(x[1])*60 + parseInt(x[2])
+  })
+  console.log(timesInSeconds);
+  var hours = 0
+  for(var y = timesInSeconds.length - 1 ; y > 0 ; y-=2) {
+    var interval = timesInSeconds[y]-timesInSeconds[y-1]
+    if(interval>36000){
+      $('#error').append('shift longer than ten hours!======possibly forgot to clock out');
+      $('#error').append(dates[y],times[y],dates[y-1],times[y-1]);
+    }
+    hours += interval;
+  }
+
+   hours = hours /3600;
+
+  if(hours - Math.floor(hours) > .5 ){
+    hours = Math.floor(hours)+.5
+  } else {
+    hours = Math.floor(hours);
+  }
+
+    $(document).ready(function(){
+
+      $('#calcDannyHours').click(function(){
+        if(times.length%2==0){
+          $('#dannyHours').append(hours+' hours');
+        } else {
+          $('#dannyHours').append('there has been a problem, probably forgot to clock out or clock in-------or must wait 5 min or so from clockout for sheet to sync');
+        }
+
+      });
+
+
+    });
+  </script>
+</body>
+</html>
