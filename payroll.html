@@ -6,6 +6,8 @@
   <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
 </head>
 <body>
+  <input type="date" id="startDate">
+  <input type="date" id="endDate">
   <button type='button'id="calcDannyHours">Calculate Danny's Hours</button>
   <div id="dannyHours"></div>
   <button id="calcNewKidsHours">Calculate New Kid's Hours</button>
@@ -17,6 +19,31 @@
   var dates;
   var times;
 
+  var getStartDate = function(){
+    var startDate = document.getElementById('startDate');
+    startDate=new Date(startDate.value);
+    console.log(startDate);
+    return startDate;
+  };
+
+  var getEndDate = function(){
+    var endDate = document.getElementById('endDate');
+    endDate = new Date(endDate.value);
+    console.log(endDate);
+    return endDate;
+  }
+
+  var isValidDateRange = function(start,end){
+    if(typeof start == 'object' && typeof end == 'object'){
+      if(start<end){
+        console.log('valid date range!');
+      } else {
+        console.log('invalid date range');
+      }
+    } else {
+      console.log('there is an error , inputs must be Date objects');
+    }
+  }
   function getHours(url) {
     dates=[];
     times=[];
@@ -29,7 +56,6 @@
 
     var values = doc.getElementsByTagName('td');
     console.log(values);
-
 
     for(var value in values){
         var text = values[value].innerHTML
@@ -76,6 +102,9 @@
     $(document).ready(function(){
 
       $('#calcDannyHours').click(function(){
+        var x = getStartDate();
+        var y = getEndDate();
+        isValidDateRange(x,y);
         if(times.length%2==0){
           $('#dannyHours').append(dannysHours+' hours');
         } else {
@@ -90,7 +119,6 @@
         } else {
           $('#newKidsHours').append('there has been a problem, probably forgot to clock out or clock in-------or must wait 5 min or so from clockout for sheet to sync');
         }
-
       });
 
 
