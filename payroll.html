@@ -22,14 +22,18 @@
   var getStartDate = function(){
     var startDate = document.getElementById('startDate');
     startDate=new Date(startDate.value);
-    console.log(startDate);
+    startDate = Date.parse(startDate)
+    startDate+=3600000*5
+    startDate = new Date(startDate);
     return startDate;
   };
 
   var getEndDate = function(){
     var endDate = document.getElementById('endDate');
     endDate = new Date(endDate.value);
-    console.log(endDate);
+    endDate = Date.parse(endDate)
+    endDate+=3600000*5
+    endDate = new Date(endDate);
     return endDate;
   }
 
@@ -44,6 +48,31 @@
       console.log('there is an error , inputs must be Date objects');
     }
   }
+
+  var getDatesWithinRange = function(start,end,arr){
+    arr = arr.filter(function(x){
+      return start <= x && x <= end
+    });
+    return arr;
+  };
+
+
+  function convertMillisecondsToHours(milliseconds){
+    return milliseconds/3600000
+  }
+
+  function roundHours(hours){
+    if(hours - Math.floor(hours) > .5 && hours-Math.floor(hours)<=.75){
+      return Math.floor(hours)+.5;
+    }else if(hours-Math.floor(hours)>.75) {
+      return Math.floor(hours)+1;
+    } else if(hours-Math.floor(hours)>.25 && hours-Math.floor(hours)<=.5){
+      return Math.floor(hours)+.5;
+    } else {
+      return Math.floor(hours);
+    }
+  }
+
   function getHours(url) {
     dates=[];
     times=[];
@@ -58,45 +87,33 @@
     console.log(values);
 
     for(var value in values){
+        if(new Date(values[value].innerHTML)!='Invalid Date'){
         var text = values[value].innerHTML
-        if(typeof text == 'string' && text !=''){
-          var regex = /[\d:]/g;
-          console.log(text,':',typeof text);
-          if(text.match(regex)) {
-            console.log('we got a match: ',text);
-            text=text.split(' ');
-            dates.push(text[0]);
-            times.push(text[1]);
-          }
-        }
+        text = new Date(text);
+        dates.push(text);
+      }
     }
     console.log('dates',dates);
-    console.log('times',times);
-    var timesInSeconds = times.map(function(x){
-      x = x.split(':');
-      return parseInt(x[0])*3600 + parseInt(x[1])*60 + parseInt(x[2])
-    })
-    console.log(timesInSeconds);
-    var hours = 0
-    for(var y = timesInSeconds.length - 1 ; y > 0 ; y-=2) {
-      var interval = timesInSeconds[y]-timesInSeconds[y-1]
-      if(interval>36000){
-        $('#error').append('shift longer than ten hours!======possibly forgot to clock out');
-        $('#error').append(dates[y],times[y],dates[y-1],times[y-1]);
-      }
-      hours += interval;
-    }
 
-     hours = hours /3600;
-
-    if(hours - Math.floor(hours) > .5 ){
-      return Math.floor(hours)+.5
-    } else {
-      return Math.floor(hours);
+    var intervals=[];
+    for(var x = dates.length-1; x>0;x-=2){
+      console.log(dates[x]-dates[x-1])
+      intervals.push(dates[x]-dates[x-1]);
     }
-  }
+    intervals = intervals.map(function(x){
+      return convertMillisecondsToHours(x);
+    });
+    var sum = 0;
+    intervals.forEach(function(x){
+      sum+=x;
+    });
+    return roundHours(sum);
+  };
+
+
 
     var dannysHours = getHours('https://docs.google.com/spreadsheets/d/140vtmLBCLqQJlmul1eCwhRD9QNgsfZwCqn9ESzMrcDM/pubhtml');
+
     var newKidsHours = getHours('https://docs.google.com/spreadsheets/d/1ZXLZgg5Y-NYr84SOWhSNHYeNUpO3aqjXjAoiDwOA4fo/pubhtml');
 
     $(document).ready(function(){
@@ -105,7 +122,7 @@
         var x = getStartDate();
         var y = getEndDate();
         isValidDateRange(x,y);
-        if(times.length%2==0){
+        if(dates.length%2==0){
           $('#dannyHours').append(dannysHours+' hours');
         } else {
           $('#dannyHours').append('there has been a problem, probably forgot to clock out or clock in-------or must wait 5 min or so from clockout for sheet to sync');
@@ -114,14 +131,12 @@
       });
 
       $('#calcNewKidsHours').click(function(){
-        if(times.length%2==0){
+        if(dates.length%2==0){
           $('#newKidsHours').append(newKidsHours+' hours');
         } else {
           $('#newKidsHours').append('there has been a problem, probably forgot to clock out or clock in-------or must wait 5 min or so from clockout for sheet to sync');
         }
       });
-
-
     });
   </script>
 </body>
