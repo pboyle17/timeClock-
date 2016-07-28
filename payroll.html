@@ -127,14 +127,14 @@
 
         var dannysHours = getHours('https://docs.google.com/spreadsheets/d/140vtmLBCLqQJlmul1eCwhRD9QNgsfZwCqn9ESzMrcDM/pubhtml',startDate,endDate);
 
-        if(dates.length%2==0&&isValidDateRange(startDate,endDate)){
-          $('#dannyHours').append(dannysHours+' hours');
+        if(dates.length%2==0){
+          $('#dannyHours').append('<br><hr>'+dannysHours+' hours');
           console.log(dannysHours);
           dates.forEach(function(x){
             $('#dannyHours').append('<hr>'+x+'<hr>');
           })
         } else {
-          $('#error').append('there has been a problem, probably forgot to clock out or clock in----make sure you have a valid date range selected');
+          $('#error').append('there has been a problem, probably forgot to clock out or clock in----make sure you have a valid date range selected <br>go here to check clock ins/outs: <a href="https://docs.google.com/spreadsheets/d/140vtmLBCLqQJlmul1eCwhRD9QNgsfZwCqn9ESzMrcDM/edit#gid=335997340">dannys punches</a>');
         }
 
       });
@@ -145,7 +145,7 @@
 
         var newKidsHours = getHours('https://docs.google.com/spreadsheets/d/1ZXLZgg5Y-NYr84SOWhSNHYeNUpO3aqjXjAoiDwOA4fo/pubhtml',startDate,endDate);
 
-        if(dates.length%2==0&&isValidDateRange(startDate,endDate)){
+        if(dates.length%2==0){
           $('#newKidsHours').append(newKidsHours+' hours');
           dates.forEach(function(x){
             $('#newKidsHours').append('<hr>'+x+'<hr>');
