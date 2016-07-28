@@ -73,7 +73,13 @@
     }
   }
 
-  function getHours(url) {
+  function getDateStringForHTML(date){
+    date = date.toLocaleDateString();
+    date = date.split('/');
+    return date[2]+'-0'+date[0]+'-'+date[1];
+  }
+
+  function getHours(url,start,end) {
     dates=[];
     times=[];
     var request = new XMLHttpRequest;
@@ -94,7 +100,7 @@
       }
     }
     console.log('dates',dates);
-
+    dates = getDatesWithinRange(start,end,dates);
     var intervals=[];
     for(var x = dates.length-1; x>0;x-=2){
       console.log(dates[x]-dates[x-1])
@@ -110,32 +116,44 @@
     return roundHours(sum);
   };
 
-
-
-    var dannysHours = getHours('https://docs.google.com/spreadsheets/d/140vtmLBCLqQJlmul1eCwhRD9QNgsfZwCqn9ESzMrcDM/pubhtml');
-
-    var newKidsHours = getHours('https://docs.google.com/spreadsheets/d/1ZXLZgg5Y-NYr84SOWhSNHYeNUpO3aqjXjAoiDwOA4fo/pubhtml');
-
     $(document).ready(function(){
+      var today = new Date();
 
+      $('#startDate').val('2016-07-01');
+      $('#endDate').val(getDateStringForHTML(today));
       $('#calcDannyHours').click(function(){
-        var x = getStartDate();
-        var y = getEndDate();
-        isValidDateRange(x,y);
-        if(dates.length%2==0){
+        var startDate = getStartDate();
+        var endDate = getEndDate();
+
+        var dannysHours = getHours('https://docs.google.com/spreadsheets/d/140vtmLBCLqQJlmul1eCwhRD9QNgsfZwCqn9ESzMrcDM/pubhtml',startDate,endDate);
+
+        if(dates.length%2==0&&isValidDateRange(startDate,endDate)){
           $('#dannyHours').append(dannysHours+' hours');
+          console.log(dannysHours);
+          dates.forEach(function(x){
+            $('#dannyHours').append('<hr>'+x+'<hr>');
+          })
         } else {
-          $('#dannyHours').append('there has been a problem, probably forgot to clock out or clock in-------or must wait 5 min or so from clockout for sheet to sync');
+          $('#error').append('there has been a problem, probably forgot to clock out or clock in----make sure you have a valid date range selected');
         }
 
       });
 
       $('#calcNewKidsHours').click(function(){
-        if(dates.length%2==0){
+        var startDate = getStartDate();
+        var endDate = getEndDate();
+
+        var newKidsHours = getHours('https://docs.google.com/spreadsheets/d/1ZXLZgg5Y-NYr84SOWhSNHYeNUpO3aqjXjAoiDwOA4fo/pubhtml',startDate,endDate);
+
+        if(dates.length%2==0&&isValidDateRange(startDate,endDate)){
           $('#newKidsHours').append(newKidsHours+' hours');
+          dates.forEach(function(x){
+            $('#newKidsHours').append('<hr>'+x+'<hr>');
+          })
         } else {
-          $('#newKidsHours').append('there has been a problem, probably forgot to clock out or clock in-------or must wait 5 min or so from clockout for sheet to sync');
+          $('#error').append('there has been a problem, probably forgot to clock out or clock in----make sure you have a valid date range selected');
         }
+
       });
     });
   </script>
